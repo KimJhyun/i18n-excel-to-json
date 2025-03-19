@@ -1,33 +1,35 @@
 {
-  "name": "i18n-excel-to-json",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/cli.js",
-    "dev": "ts-node src/cli.ts",
-    "prepare": "npm run build"
-  },
-  "keywords": [
-    "excel",
-    "json",
-    "converter",
-    "cli",
-    "vue",
-    "i18n"
-  ],
-  "author": "ulalaLab",
-  "license": "MIT",
-  "description": "Export i18n Json from Excel with CLI",
-  "dependencies": {
-    "bun": "^1.1.33",
-    "commander": "^13.1.0",
-    "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.10",
-    "eslint": "^8.52.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
-  }
+	"name": "i18n-excel-to-json",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc",
+		"start": "node dist/cli.js",
+		"dev": "tsx src/cli.ts"
+	},
+	"keywords": [
+		"excel",
+		"json",
+		"converter",
+		"cli",
+		"vue",
+		"i18n"
+	],
+	"author": "ulalaLab",
+	"license": "MIT",
+	"description": "Export i18n Json from Excel with CLI",
+	"dependencies": {
+		"bun": "^1.1.33",
+		"commander": "^13.1.0",
+		"dotenv": "^16.4.7",
+		"figlet": "^1.8.0",
+		"xlsx": "^0.18.5"
+	},
+	"devDependencies": {
+		"@types/figlet": "^1.7.0",
+		"@types/node": "^22.13.10",
+		"eslint": "^8.52.0",
+		"tsx": "^4.19.3",
+		"typescript": "^5.8.2"
+	}
 }

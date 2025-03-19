@@ -2,14 +2,11 @@ import * as xlsx from 'xlsx';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const dirOptions = {
-    recursive: true,
-};
-
 export interface Data {
     [key: string]: any;
 };
 
+/** I/O file path options */
 export interface PathOptions {
     importPath: string;
     exportPath: string;
@@ -24,6 +21,10 @@ export class ExcelToJson {
         };
     }
 
+    /**
+     * Read Excel files first sheet
+     * @returns 
+     */
     private readExcelFile(): Data[] {
         // Excel file
         const dataFile = xlsx.readFile(this.options.importPath);
@@ -32,10 +33,17 @@ export class ExcelToJson {
         const sheetName = dataFile.SheetNames[0];
         const worksheet = dataFile.Sheets[sheetName];
         const data = xlsx.utils.sheet_to_json(worksheet) as Data[];
+
+        console.log('Read Data');
+        console.log(data);
         
         return data;
     }
 
+    /**
+     * Extract language message json file
+     * @param data JSON data
+     */
     private saveToJsonFiles(data: Data): void {
         for (const key in data) {
           const jsonString = JSON.stringify(data[key], null, 2);
@@ -51,6 +59,10 @@ export class ExcelToJson {
         console.log(`Created file: ${path.join(this.options.exportPath, "all.json")}`);
     }
 
+    /**
+     * Main Process
+     * @returns promise
+     */
     public async convert(): Promise<{ success: boolean; message: string }> {
         try {
             if (!fs.existsSync(this.options.importPath)) {
