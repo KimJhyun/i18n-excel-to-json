@@ -8,7 +8,7 @@ const LANG_ID = 'language';
 const MERGED_COL_REGEX = /__EMPTY(?:_(\d+))?/;
 
 /** Excel Row Data */
-export interface Data extends Record<string, unknown> {};
+interface Data extends Record<string, unknown> {};
 
 /** I/O file path options */
 export interface PathOptions {
@@ -16,13 +16,18 @@ export interface PathOptions {
     exportPath: string;
 };
 
-export interface KeyStructure {
+interface KeyStructure {
     [key: string]: KeyStructure | string;
 };
 
 interface Result {
     [key: string]: KeyStructure;
 };
+
+interface KeyPathContext {
+    currentDepth: number;
+    pathStack: string[];
+}
 
 export class ExcelToJson {
     private options: PathOptions;
@@ -73,19 +78,29 @@ export class ExcelToJson {
         current[lastKey] = value;
     }
 
-    private buildDynamicPath(row: Data, keyColumns: string[]): string[] {
-        const path: string[] = [];
-        let currentDepth = 0;
-      
-        keyColumns.forEach((column, index) => {
+    private buildDynamicPath(row: Data, keyColumns: string[], context: KeyPathContext): string[] {
+        const newPath = [...context.pathStack];
+        let maxDepth = context.currentDepth;
+
+        keyColumns.forEach((column, depth) => {
             const value = row[column];
             if (value && typeof value === 'string') {
-                currentDepth = index;
-                path[currentDepth] = value;
+                maxDepth = depth;
+                newPath[depth] = value;
+                for (let i = depth + 1; i < newPath.length; i++) {
+                    newPath[i] = undefined!;
+                }
             }
         });
-      
-        return path.slice(0, currentDepth + 1);
+
+        // 유효한 경로만 필터링
+        const validPath = newPath.filter(p => !!p).slice(0, maxDepth + 1);
+        
+        // 컨텍스트 업데이트
+        context.currentDepth = maxDepth;
+        context.pathStack = validPath;
+
+        return validPath;
     }
     
     private deepMerge(target: KeyStructure, source: KeyStructure) {
@@ -93,6 +108,7 @@ export class ExcelToJson {
             if (typeof value === 'object') {
                 if (!target[key] || typeof target[key] === 'string') {
                     target[key] = {};
+                    return;
                 }
                 this.deepMerge(target[key] as KeyStructure, value);
             } else {
@@ -101,33 +117,58 @@ export class ExcelToJson {
         });
     }
 
+    private detectKeyColumns(data: Data[], languageKeyMap: Record<string, string>): string[] {
+        const languageKeys = new Set(Object.values(languageKeyMap).filter(Boolean));
+        console.log(languageKeys);
+    
+        return Object.keys(data[1])
+            .filter(column => !languageKeys.has(column as string))
+            .sort((a, b) => {
+                const getDepth = (col: string): number => {
+                    if (col === KEY_ID) return 0;
+                    const num = col.match(MERGED_COL_REGEX)?.[1] || '0';
+                    return parseInt(num);
+                };
+                return getDepth(a) - getDepth(b);
+            });
+    }
+
     /**
      * Extract language message json file
      * @param data JSON data
      */
     private saveToJsonFiles(data: Data[]): void {
         const languageKeyMap = objUtil.swapKeyValue(data[0]);
-        const languages = Object.values(data[0]) as string[];
+        const languages = Object.values(data[0]).filter(Boolean) as string[];
         const result: Result = languages.reduce((acc, lang) => ({ ...acc, [lang]: {} }), {});
+        const pathContext: KeyPathContext = {
+            currentDepth: 0,
+            pathStack: []
+        };
+        const keyColumns = this.detectKeyColumns(data, languageKeyMap);
+
+        console.log(keyColumns);
+        
 
         data.slice(1).forEach(row => {
-            // const path = this.buildDynamicPath(row, keys);
+            const path = this.buildDynamicPath(row, keyColumns, pathContext);
+            // console.log(path);
 
             languages.forEach(lang => {
-                const langValue = row[languageKeyMap[lang]];
-                if (!langValue || typeof langValue !== 'string') return;
+                const message = row[languageKeyMap[lang]];
+                if (!message || typeof message !== 'string') return;
 
-                console.log(`${lang} : ${langValue}`);
+                // console.log(`${lang} : ${message}`);
+                // console.log(path);
                 
-
-                // const tempStructure = this.createKeyStructure();
-                // this.assignValue(tempStructure, path, langValue);
-                // this.deepMerge(result[lang], tempStructure);
+                const tempStructure = this.createKeyStructure();
+                this.assignValue(tempStructure, path, message);
+                this.deepMerge(result[lang], tempStructure);
             });
         });
 
         // console.log(languageKeyMap);
-        console.log(data);
+        // console.log(data);
         // console.log('res: ');
         // console.log(result);
         
