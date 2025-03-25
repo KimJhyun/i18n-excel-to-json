@@ -142,3 +142,6 @@ dist
 *.sw?
 
 *.tsbuildinfo
+
+# MS Temp File
+~$*
