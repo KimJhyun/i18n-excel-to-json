@@ -25,7 +25,6 @@ interface Result {
 };
 
 interface KeyPathContext {
-    currentDepth: number;
     pathStack: string[];
 }
 
@@ -64,73 +63,92 @@ export class ExcelToJson {
     }
 
     private assignValue(obj: KeyStructure, path: string[], value: string) {
-        const keys = [...path];
-        const lastKey = path.pop()!;
         let current = obj;
-
-        for (const key of keys) {
-            if (!current[key] || typeof current[key] === 'string') {
-                current[key] = {};
+    
+        for (let i = 0; i < path.length; i++) {
+            const key = path[i];
+            
+            if (i === path.length - 1) {
+                current[key] = value;
+            } else {
+                if (!current[key] || typeof current[key] === 'string') {
+                    current[key] = {};
+                }
+                current = current[key] as KeyStructure;
             }
-            current = current[key] as KeyStructure;
         }
-
-        current[lastKey] = value;
     }
 
     private buildDynamicPath(row: Data, keyColumns: string[], context: KeyPathContext): string[] {
         const newPath = [...context.pathStack];
-        let maxDepth = context.currentDepth;
+
+        newPath.forEach((column, index) => {
+            const path = keyColumns[index];
+            if(path && path !== '') {
+                newPath[index] = path;
+            }
+        })
 
         keyColumns.forEach((column, depth) => {
-            const value = row[column];
-            if (value && typeof value === 'string') {
-                maxDepth = depth;
-                newPath[depth] = value;
+            const key = row[column];
+            if (key && typeof key === 'string') {
+                newPath[depth] = key;
                 for (let i = depth + 1; i < newPath.length; i++) {
                     newPath[i] = undefined!;
                 }
             }
         });
 
-        // 유효한 경로만 필터링
-        const validPath = newPath.filter(p => !!p).slice(0, maxDepth + 1);
-        
-        // 컨텍스트 업데이트
-        context.currentDepth = maxDepth;
+        const validPath = newPath.filter(Boolean);
         context.pathStack = validPath;
 
         return validPath;
     }
     
+    /**
+     * Merging layered key message
+     */
     private deepMerge(target: KeyStructure, source: KeyStructure) {
-        Object.keys(source).forEach(([key, value]) => {
-            if (typeof value === 'object') {
+        Object.keys(source).forEach((key) => {
+            if (typeof source[key] === 'object') {
                 if (!target[key] || typeof target[key] === 'string') {
                     target[key] = {};
-                    return;
                 }
-                this.deepMerge(target[key] as KeyStructure, value);
+                this.deepMerge(target[key] as KeyStructure, source[key]);
             } else {
-                target[key] = value;
+                target[key] = source[key];
             }
         });
     }
 
-    private detectKeyColumns(data: Data[], languageKeyMap: Record<string, string>): string[] {
+    /** 
+     * Detect changed keys
+     */
+    private detectKeyColumns(data: Data, languageKeyMap: Record<string, string>): string[] {
         const languageKeys = new Set(Object.values(languageKeyMap).filter(Boolean));
-        console.log(languageKeys);
-    
-        return Object.keys(data[1])
-            .filter(column => !languageKeys.has(column as string))
-            .sort((a, b) => {
-                const getDepth = (col: string): number => {
-                    if (col === KEY_ID) return 0;
-                    const num = col.match(MERGED_COL_REGEX)?.[1] || '0';
-                    return parseInt(num);
-                };
-                return getDepth(a) - getDepth(b);
-            });
+        const currentKeyPath: string[] = [];
+        const keys = Object.keys(data).filter(column => !languageKeys.has(column));
+        const lastKey: string = keys[keys.length - 1] as string;
+
+        const currentDepth = lastKey === KEY_ID
+            ? 0
+            : parseInt(lastKey.match(MERGED_COL_REGEX)?.[1] || '0') + 1;
+            
+        if (currentDepth === keys.length - 1) {
+            return keys;
+        }
+            
+        const changes = keys.map(key => parseInt(key.match(MERGED_COL_REGEX)?.[1] || '0') + 1);
+        let keyIdx = 0;
+        for(let i = 0; i <= currentDepth; i++) {
+            if(changes.includes(i)) {
+                currentKeyPath.push(keys[keyIdx] as string);
+                keyIdx++;
+            } else {
+                currentKeyPath.push('');
+            }
+        }
+        return currentKeyPath;
     }
 
     /**
@@ -140,38 +158,26 @@ export class ExcelToJson {
     private saveToJsonFiles(data: Data[]): void {
         const languageKeyMap = objUtil.swapKeyValue(data[0]);
         const languages = Object.values(data[0]).filter(Boolean) as string[];
+
         const result: Result = languages.reduce((acc, lang) => ({ ...acc, [lang]: {} }), {});
         const pathContext: KeyPathContext = {
-            currentDepth: 0,
             pathStack: []
         };
-        const keyColumns = this.detectKeyColumns(data, languageKeyMap);
-
-        console.log(keyColumns);
-        
 
         data.slice(1).forEach(row => {
+            const keyColumns = this.detectKeyColumns(row, languageKeyMap);
             const path = this.buildDynamicPath(row, keyColumns, pathContext);
-            // console.log(path);
 
             languages.forEach(lang => {
                 const message = row[languageKeyMap[lang]];
                 if (!message || typeof message !== 'string') return;
-
-                // console.log(`${lang} : ${message}`);
-                // console.log(path);
                 
-                const tempStructure = this.createKeyStructure();
-                this.assignValue(tempStructure, path, message);
-                this.deepMerge(result[lang], tempStructure);
+                const messageObj = this.createKeyStructure();
+                this.assignValue(messageObj, path, message);
+                this.deepMerge(result[lang], messageObj);
             });
         });
 
-        // console.log(languageKeyMap);
-        // console.log(data);
-        // console.log('res: ');
-        // console.log(result);
-        
         const files: string[] = [];
         Object.entries(result).forEach(([lang, data]) => {
             const filePath = path.join(this.options.exportPath, `lang_${lang}.json`);
@@ -179,7 +185,8 @@ export class ExcelToJson {
             fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
         });
 
-        console.log(`Created files: ${files.toString()}`);
+        console.log('Created files:');
+        console.log(files);
     }
 
     /**
