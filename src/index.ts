@@ -1,10 +1,9 @@
-import { ExcelToJson, PathOptions, Data } from './convert/convertExcel';
+import { ExcelToJson, PathOptions } from './convert/convertExcel';
 
 // interface
 export {
     ExcelToJson,
     PathOptions,
-    Data
 };
 
 // function

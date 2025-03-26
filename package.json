@@ -1,6 +1,6 @@
 {
-	"name": "i18n-excel-to-json",
-	"version": "1.0.0",
+	"name": "i18n-excel-json-converter",
+	"version": "0.1.0",
 	"main": "index.js",
 	"scripts": {
 		"build": "tsc",
@@ -17,7 +17,7 @@
 	],
 	"author": "ulalaLab",
 	"license": "MIT",
-	"description": "Export i18n Json from Excel with CLI",
+	"description": "Export i18n Json from Excel with CLI or plugin",
 	"dependencies": {
 		"bun": "^1.1.33",
 		"commander": "^13.1.0",
