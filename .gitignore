@@ -145,3 +145,6 @@ dist
 
 # MS Temp File
 ~$*
+
+# Test Files
+output/
