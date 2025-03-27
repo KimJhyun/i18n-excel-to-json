@@ -3,6 +3,8 @@
 	"version": "0.1.0",
 	"main": "index.js",
 	"scripts": {
+		"prepare": "husky install",
+		"lint": "eslint . --fix",
 		"build": "tsc",
 		"start": "node dist/cli.js",
 		"dev": "tsx src/cli.ts"
@@ -15,21 +17,38 @@
 		"vue",
 		"i18n"
 	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/KimJhyun/i18n-excel-to-json.git"
+	},
+	"bugs": {
+		"url": "https://github.com/KimJhyun/i18n-excel-to-json/issues"
+	},
+	"homepage": "https://github.com/KimJhyun/i18n-excel-to-json#readme",
 	"author": "ulalaLab",
 	"license": "MIT",
 	"description": "Export i18n Json from Excel with CLI or plugin",
 	"dependencies": {
-		"bun": "^1.1.33",
 		"commander": "^13.1.0",
 		"dotenv": "^16.4.7",
-		"figlet": "^1.8.0",
 		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
+		"@stylistic/eslint-plugin": "^4.0.1",
+		"@tsconfig/node22": "^22.0.0",
 		"@types/figlet": "^1.7.0",
 		"@types/node": "^22.13.10",
-		"eslint": "^8.52.0",
+		"@typescript-eslint/eslint-plugin": "^8.28.0",
+		"@typescript-eslint/parser": "^8.28.0",
+		"bun": "^1.1.33",
+		"eslint": "^9.23.0",
+		"figlet": "^1.8.0",
+		"husky": "^9.1.7",
+		"jiti": "^2.4.2",
+		"lint-staged": "^15.5.0",
 		"tsx": "^4.19.3",
-		"typescript": "^5.8.2"
+		"typescript": "^5.8.2",
+		"typescript-eslint": "^8.28.0",
+		"vite-plugin-eslint": "^1.8.1"
 	}
 }
