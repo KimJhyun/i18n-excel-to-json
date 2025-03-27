@@ -1,8 +1,7 @@
-
-const swapKeyValue = (obj: Record<string, unknown>) =>  {
+const swapKeyValue = (obj: Record<string, unknown>) => {
     const swapped: Record<string, string> = {};
-    for (let key in obj) {
-        if (obj.hasOwnProperty(key)) {
+    for (const key in obj) {
+        if (Object.hasOwn(obj, key)) {
             swapped[obj[key] as string] = key;
         }
     }

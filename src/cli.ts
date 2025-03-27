@@ -30,13 +30,13 @@ async function main() {
         }
 
         const importPath = options.input
-            ||  process.env.EXCEL_INPUT_PATH
-            ||  path.join(process.cwd(), 'input.xlsx');
+        || process.env.EXCEL_INPUT_PATH
+        || path.join(process.cwd(), 'input.xlsx');
 
         const exportPath = options.output
-            ||  process.env.EXCEL_OUTPUT_DIR
-            ||  path.join(process.cwd(), 'output');
-                            
+        || process.env.EXCEL_OUTPUT_DIR
+        || path.join(process.cwd(), 'output');
+
         if (!fs.existsSync(importPath)) {
             console.error(`Error: Input file not found at ${importPath}`);
             process.exit(1);
@@ -47,13 +47,13 @@ async function main() {
 
         const result = await convertExcelToJson({
             importPath,
-            exportPath
+            exportPath,
         });
 
         if (result.success) {
-            console.log('\n✅ ' + result.message);
+            console.log(`\n✅ ${result.message}`);
         } else {
-            console.error('\n❌ ' + result.message);
+            console.error(`\n❌ ${result.message}`);
             process.exit(1);
         }
     } catch (error) {
