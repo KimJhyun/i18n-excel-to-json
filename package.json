@@ -5,6 +5,7 @@
 	"scripts": {
 		"prepare": "husky install",
 		"lint": "eslint . --fix",
+		"tsc": "tsc -p tsconfig.json --noEmit",
 		"build": "tsc",
 		"start": "node dist/cli.js",
 		"dev": "tsx src/cli.ts"
