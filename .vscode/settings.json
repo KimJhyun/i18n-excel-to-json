@@ -1,0 +1,13 @@
+{
+    "editor.codeActionsOnSave": { "source.fixAll": "explicit" },
+    "files.eol": "\n",
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "eslint.config.ts": ".eslint*, eslint*, .prettier*, prettier*, .editorconfig",
+        "package.json": "package-lock.json, pnpm*, .yarnrc*, yarn*, bun*",
+        "tsconfig.json": "tsconfig.*.json"
+    }
+}
