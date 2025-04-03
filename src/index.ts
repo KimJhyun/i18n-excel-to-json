@@ -1,9 +1,12 @@
-import { ExcelToJson, PathOptions } from './convert/convertExcel';
+import type { PathOptions } from './converter/convert/convertExcel';
+import { ExcelToJson } from './converter/convert/convertExcel';
+import i18nExcelJsonConverter from './vite-plugin-core';
 
 // interface
 export {
     ExcelToJson,
     PathOptions,
+    i18nExcelJsonConverter,
 };
 
 // function

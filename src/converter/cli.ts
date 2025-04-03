@@ -3,7 +3,10 @@ import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import figlet from 'figlet';
-import { convertExcelToJson } from './index';
+import { convertExcelToJson } from '../index';
+
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
 const program = new Command();
 program
@@ -11,13 +14,16 @@ program
     .description('Convert Excel files to JSON with customizable key field')
     .version('1.0.0');
 
-// 명령 정의
+// Command definition
 program
     .option('-i, --input <path>', 'Path to the input Excel file')
     .option('-o, --output <directory>', 'Directory to save JSON files')
     .option('-e, --env <path>', 'Path to .env file')
     .parse(process.argv);
 
+/**
+ * CLI main process method
+ */
 async function main() {
     try {
         console.log(figlet.textSync('i18n Ecxel-JSON Converter'));
@@ -60,6 +66,8 @@ async function main() {
         console.error('An unexpected error occurred:', error);
         process.exit(1);
     }
+
+    process.exit(0);
 }
 
 if (require.main === module) {

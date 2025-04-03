@@ -1,3 +1,8 @@
+/**
+ * Swap key value structure
+ * @param obj target object
+ * @returns swapped object
+ */
 const swapKeyValue = (obj: Record<string, unknown>) => {
     const swapped: Record<string, string> = {};
     for (const key in obj) {

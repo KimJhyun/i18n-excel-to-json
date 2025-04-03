@@ -2,6 +2,9 @@
 	"name": "i18n-excel-json-converter",
 	"version": "0.1.0",
 	"type": "module",
+	"files": [
+		"dist"
+	],
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
@@ -10,7 +13,7 @@
 		"tsc": "tsc -p tsconfig.json --noEmit",
 		"build": "tsc",
 		"start": "node --loader ts-node/esm src/cli.ts",
-		"dev": "tsx src/cli.ts",
+		"dev": "tsx src/converter/cli.ts",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"bin" : {
